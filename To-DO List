@@ -1,0 +1,79 @@
+class Task:
+    def __init__(self, description, completed=False):
+        self.description = description
+        self.completed = completed
+    
+    def __str__(self):
+        status = "[x]" if self.completed else "[ ]"
+        return f"{status} {self.description}"
+    
+    def toggle_complete(self):
+        self.completed = not self.completed
+class ToDoList:
+    def __init__(self):
+        self.tasks = []
+    
+    def add_task(self, task):
+        self.tasks.append(task)
+    
+    def update_task(self, index, completed=False):
+        if 0 <= index < len(self.tasks):
+            if completed:
+                self.tasks[index].toggle_complete()
+            else:
+                del self.tasks[index]
+    
+    def save_tasks(self, filename):
+        with open(filename, 'w') as f:
+            for task in self.tasks:
+                f.write(f"{task.description},{task.completed}\n")
+    
+    def load_tasks(self, filename):
+        try:
+            with open(filename, 'r') as f:
+                for line in f:
+                    description, completed = line.strip().split(',')
+                    completed = bool(completed == 'True')
+                    self.add_task(Task(description, completed))
+        except FileNotFoundError:
+            pass
+    
+    def __str__(self):
+        if not self.tasks:
+            return "No tasks."
+        return "\n".join([f"{i + 1}. {task}" for i, task in enumerate(self.tasks)])
+import sys
+
+def main():
+    todo_list = ToDoList()
+    todo_list.load_tasks('tasks.txt')  # Load tasks from file
+    
+    while True:
+        print("\n=== To-Do List ===")
+        print(todo_list)
+        print("\nMenu:")
+        print("1. Add Task")
+        print("2. Mark Task as Complete")
+        print("3. Delete Task")
+        print("4. Save and Quit")
+        
+        choice = input("Enter your choice (1-4): ")
+        
+        if choice == '1':
+            description = input("Enter task description: ")
+            todo_list.add_task(Task(description))
+        elif choice == '2':
+            index = int(input("Enter task number to mark as complete: ")) - 1
+            todo_list.update_task(index, completed=True)
+        elif choice == '3':
+            index = int(input("Enter task number to delete: ")) - 1
+            todo_list.update_task(index)
+        elif choice == '4':
+            todo_list.save_tasks('tasks.txt')  # Save tasks to file
+            print("Tasks saved. Exiting.")
+            break
+        else:
+            print("Invalid choice. Please enter a number from 1 to 4.")
+
+if __name__ == "__main__":
+    main()
